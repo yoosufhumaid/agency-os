@@ -9,7 +9,7 @@ export default async function ClientLayout({ children }: { children: React.React
     .from('profiles')
     .select('full_name')
     .eq('id', session?.user?.id ?? '')
-    .single()
+    .single() as { data: { full_name: string } | null }
 
   const name = profile?.full_name ?? 'Client'
 
