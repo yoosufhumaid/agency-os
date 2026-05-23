@@ -5,13 +5,19 @@ export default async function ClientLayout({ children }: { children: React.React
   const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name')
-    .eq('id', session?.user?.id ?? '')
-    .single() as { data: { full_name: string } | null }
+  let name = 'Client'
 
-  const name = profile?.full_name ?? 'Client'
+  if (session?.user?.id) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', session.user.id)
+      .single()
+
+    if (data && typeof data === 'object' && 'full_name' in data) {
+      name = (data as any).full_name ?? 'Client'
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#f8f7ff] flex">
