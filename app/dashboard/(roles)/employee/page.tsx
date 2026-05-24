@@ -12,14 +12,14 @@ export default async function EmployeeDashboard() {
   const today = new Date().toISOString().split('T')[0]
 
   const [profileRes, tasksRes, messagesRes, attendanceRes] = await Promise.all([
-    supabase.from('profiles').select('full_name').eq('id', userId).single(),
-    supabase.from('tasks').select('*').eq('assigned_to', userId).order('created_at', { ascending: false }),
+    supabaseAdmin.from('profiles').select('full_name').eq('id', userId).single(),
+    supabaseAdmin.from('tasks').select('*').eq('assigned_to', userId).order('created_at', { ascending: false }),
     supabase.from('messages').select('id, subject, body, is_read, created_at, sender_id').eq('receiver_id', userId).order('created_at', { ascending: false }),
     supabase.from('attendance').select('*').eq('user_id', userId).eq('date', today).maybeSingle(),
   ])
 
-  const profile = profileRes.data
-  const tasks = tasksRes.data ?? []
+  const profile = profileRes.data as { full_name: string } | null
+  const tasks = (tasksRes.data ?? []) as any[]
   const messages = messagesRes.data ?? []
   const checkedInToday = !!attendanceRes.data
 
@@ -30,7 +30,7 @@ export default async function EmployeeDashboard() {
 
   const enrichedMessages = messages.map((m: any) => ({
     ...m,
-    senderName: senderProfiles.find((p: any) => p.id === m.sender_id)?.full_name ?? 'Unknown',
+    senderName: (senderProfiles as any[]).find((p: any) => p.id === m.sender_id)?.full_name ?? 'Unknown',
   }))
 
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there'
