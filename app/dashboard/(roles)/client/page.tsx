@@ -8,7 +8,7 @@ export default async function ClientDashboard() {
 
   const userId = session.user.id
 
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from('profiles')
     .select('full_name')
     .eq('id', userId)
@@ -20,6 +20,7 @@ export default async function ClientDashboard() {
     .eq('client_id', userId)
     .order('created_at', { ascending: false })
 
+  const profile = profileData as { full_name: string } | null
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there'
   const allProjects = projects ?? []
 
@@ -37,7 +38,6 @@ export default async function ClientDashboard() {
         <p className="text-slate-500 text-sm mt-1">Here is the current status of your projects.</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-white border border-black/5 rounded-2xl shadow-sm p-5">
           <p className="text-sm text-slate-500">Total Projects</p>
@@ -46,18 +46,17 @@ export default async function ClientDashboard() {
         <div className="bg-white border border-black/5 rounded-2xl shadow-sm p-5">
           <p className="text-sm text-slate-500">In Progress</p>
           <p className="text-3xl font-bold text-[#1a1a2e] mt-1">
-            {allProjects.filter(p => p.status === 'active').length}
+            {allProjects.filter((p: any) => p.status === 'active').length}
           </p>
         </div>
         <div className="bg-white border border-black/5 rounded-2xl shadow-sm p-5">
           <p className="text-sm text-slate-500">Completed</p>
           <p className="text-3xl font-bold text-[#1a1a2e] mt-1">
-            {allProjects.filter(p => p.status === 'completed').length}
+            {allProjects.filter((p: any) => p.status === 'completed').length}
           </p>
         </div>
       </div>
 
-      {/* Projects list */}
       <div className="bg-white border border-black/5 rounded-2xl shadow-sm p-6">
         <h2 className="text-lg font-semibold text-[#1a1a2e] mb-4">My Projects</h2>
         {allProjects.length === 0 ? (
