@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabaseServer'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export async function checkIn() {
   const supabase = await createClient()
@@ -11,7 +12,7 @@ export async function checkIn() {
   const today = new Date().toISOString().split('T')[0]
   const now = new Date().toTimeString().split(' ')[0]
 
-  const { error } = await supabase.from('attendance').insert({
+  const { error } = await supabaseAdmin.from('attendance').insert({
     user_id: session.user.id,
     date: today,
     checked_in_at: now,
