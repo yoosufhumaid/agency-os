@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabaseServer";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { revalidatePath } from "next/cache";
 import { resend } from "@/lib/resend";
 
@@ -13,7 +14,7 @@ export async function sendMessage(formData: FormData) {
   const subject = formData.get("subject") as string;
   const body = formData.get("body") as string;
 
-  const { error: insertError } = await supabase.from("messages").insert({
+  const { error: insertError } = await supabaseAdmin.from("messages").insert({
     sender_id: session.user.id,
     receiver_id: receiverId,
     project_id: null,
@@ -23,16 +24,16 @@ export async function sendMessage(formData: FormData) {
   });
 
   if (!insertError) {
-    const { data: receiverProfile } = await supabase
+    const { data: receiverProfile } = await supabaseAdmin
       .from("profiles")
       .select("email")
       .eq("id", receiverId)
       .single();
 
-    if (receiverProfile?.email) {
+    if ((receiverProfile as any)?.email) {
       await resend.emails.send({
         from: "AgencyOS <onboarding@resend.dev>",
-        to: receiverProfile.email,
+        to: (receiverProfile as any).email,
         subject: `New message: ${subject}`,
         html: `
           <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
@@ -57,7 +58,7 @@ export async function markAsRead(messageId: string) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return;
 
-  await supabase
+  await supabaseAdmin
     .from("messages")
     .update({ is_read: true })
     .eq("id", messageId)
