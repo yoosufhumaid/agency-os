@@ -5,11 +5,19 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
   const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name')
-    .eq('id', session?.user?.id ?? '')
-    .single()
+  let name = 'Employee'
+
+  if (session?.user?.id) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', session.user.id)
+      .single()
+
+    if (data && typeof data === 'object' && 'full_name' in data) {
+      name = (data as any).full_name ?? 'Employee'
+    }
+  }
 
   const { data: unreadMessages } = await supabase
     .from('messages')
@@ -17,7 +25,6 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
     .eq('receiver_id', session?.user?.id ?? '')
     .eq('is_read', false)
 
-  const name = profile?.full_name ?? 'Employee'
   const unreadCount = unreadMessages?.length ?? 0
 
   return (
