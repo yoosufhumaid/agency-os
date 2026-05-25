@@ -16,7 +16,7 @@ export async function inviteTeamMember(formData: FormData) {
   if (error) return { error: error.message }
   if (!data?.user?.id) return { error: 'No user returned from invite' }
 
-  const { error: profileError } = await supabaseAdmin
+  await supabaseAdmin
     .from('profiles')
     .upsert({
       id: data.user.id,
@@ -25,10 +25,7 @@ export async function inviteTeamMember(formData: FormData) {
       role,
     }, { onConflict: 'id' })
 
-  if (profileError) return { error: profileError.message }
-
   revalidatePath('/dashboard/owner/team')
-  return { success: true }
 }
 
 export async function removeTeamMember(formData: FormData) {
@@ -38,6 +35,4 @@ export async function removeTeamMember(formData: FormData) {
   await supabaseAdmin.auth.admin.deleteUser(userId)
 
   revalidatePath('/dashboard/owner/team')
-  return { success: true }
 }
-
