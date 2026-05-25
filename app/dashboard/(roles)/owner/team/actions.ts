@@ -30,9 +30,14 @@ export async function inviteTeamMember(formData: FormData) {
 
 export async function removeTeamMember(formData: FormData) {
   const userId = formData.get('userId') as string
+  if (!userId) return
 
-  await supabaseAdmin.from('profiles').delete().eq('id', userId)
-  await supabaseAdmin.auth.admin.deleteUser(userId)
+  try {
+    await supabaseAdmin.from('profiles').delete().eq('id', userId)
+    await supabaseAdmin.auth.admin.deleteUser(userId)
+  } catch (e) {
+    console.error('removeTeamMember error:', e)
+  }
 
   revalidatePath('/dashboard/owner/team')
 }
