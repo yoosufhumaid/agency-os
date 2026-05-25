@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export async function inviteTeamMember(formData: FormData) {
@@ -32,12 +33,16 @@ export async function removeTeamMember(formData: FormData) {
   const userId = formData.get('userId') as string
   if (!userId) return
 
-  try {
-    await supabaseAdmin.from('profiles').delete().eq('id', userId)
-    await supabaseAdmin.auth.admin.deleteUser(userId)
-  } catch (e) {
-    console.error('removeTeamMember error:', e)
-  }
+  // Delete related records first to avoid foreign key issues
+  await supabaseAdmin.from('tasks').update({ assigned_to: null }).eq('assigned_to', userId)
+  await supabaseAdmin.from('messages').delete().eq('sender_id', userId)
+  await supabaseAdmin.from('messages').delete().eq('receiver_id', userId)
+  await supabaseAdmin.from('attendance').delete().eq('user_id', userId)
+
+  // Then delete profile and auth user
+  await supabaseAdmin.from('profiles').delete().eq('id', userId)
+  await supabaseAdmin.auth.admin.deleteUser(userId)
 
   revalidatePath('/dashboard/owner/team')
+  redirect('/dashboard/owner/team')
 }
