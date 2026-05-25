@@ -33,13 +33,16 @@ export async function removeTeamMember(formData: FormData) {
   const userId = formData.get('userId') as string
   if (!userId) return
 
-  // Delete related records first to avoid foreign key issues
+  // Nullify client_id on projects assigned to this client
+  await supabaseAdmin.from('projects').update({ client_id: null }).eq('client_id', userId)
+
+  // Delete related records for employees
   await supabaseAdmin.from('tasks').update({ assigned_to: null }).eq('assigned_to', userId)
   await supabaseAdmin.from('messages').delete().eq('sender_id', userId)
   await supabaseAdmin.from('messages').delete().eq('receiver_id', userId)
   await supabaseAdmin.from('attendance').delete().eq('user_id', userId)
 
-  // Then delete profile and auth user
+  // Delete profile and auth user
   await supabaseAdmin.from('profiles').delete().eq('id', userId)
   await supabaseAdmin.auth.admin.deleteUser(userId)
 
