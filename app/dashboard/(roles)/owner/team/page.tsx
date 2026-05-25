@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabaseServer";
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import InviteForm from "./InviteForm";
 import { removeTeamMember } from "./actions";
+import RemoveButton from "./RemoveButton";
 
 export default async function TeamPage() {
   const supabase = await createClient();
@@ -49,10 +50,7 @@ export default async function TeamPage() {
                       <p className="font-semibold text-[#1a1a2e]">{member.full_name}</p>
                       <p className="text-sm text-slate-500">{member.email}</p>
                     </div>
-                    <form action={removeTeamMember}>
-                      <input type="hidden" name="userId" value={member.id} />
-                      <button type="submit" className="bg-[#7c6cfa] hover:bg-[#6a57e6] rounded-full px-5 py-2 text-sm font-semibold text-white">Remove</button>
-                    </form>
+                    <RemoveButton userId={member.id} />
                   </div>
                 ))
               )}
@@ -71,10 +69,7 @@ export default async function TeamPage() {
                       <p className="font-semibold text-[#1a1a2e]">{member.full_name}</p>
                       <p className="text-sm text-slate-500">{member.email}</p>
                     </div>
-                    <form action={removeTeamMember}>
-                      <input type="hidden" name="userId" value={member.id} />
-                      <button type="submit" className="bg-[#7c6cfa] hover:bg-[#6a57e6] rounded-full px-5 py-2 text-sm font-semibold text-white">Remove</button>
-                    </form>
+                   <RemoveButton userId={member.id} />
                   </div>
                 ))
               )}
